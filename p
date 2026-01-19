@@ -1,56 +1,38 @@
-class Item {
-    constructor(name) {
-        this.name = name;
-        this.purchased = false;
-        this.quantity = 1;
-    }
 
-    toggle() {
-        this.purchased = !this.purchased;
-    }
 
-    increaseQuantity() {
-        this.quantity++;
-    }
 
-    decreaseQuantity() {
-        if (this.quantity > 1) {
-            this.quantity--;
-        }
-    }
-}
+
 
 let items = [
-    new Item("Pan"),
-    new Item("Gelatina"),
-    new Item("Palomitas"),
-    new Item("Plátano"),
-    new Item("Arroz"),
-    new Item("Pescado"),
-    new Item("Pasta"),
-    new Item("Hamburguesa")
+    { name: "Pan", purchased: false },
+    { name: "Gelatina", purchased: true },
+    { name: "Palomitas", purchased: true },
+    { name: "Plátano", purchased: false },
+    { name: "Arroz", purchased: false },
+    { name: "Pescado", purchased: true },
+    { name: "Pasta", purchased: true },
+    { name: "Hamburguesa", purchased: false}
 ];
-items[1].purchased = true;
 
 const itemInput = document.getElementById("itemInput");
 const addButton = document.getElementById("addButton");
-const plusButton = document.getElementById("plusButton");
 const list = document.getElementById("list");
 const message = document.getElementById("message");
 const clearButton = document.getElementById("clearButton");
 const sortButton = document.getElementById("sortButton");
 
-function showMessage(text) {
-    message.textContent = text;
-}
 
 function addItem(name) {
     name = name.trim();
     if (name === "") return;
     if (items.some(item => item.name === name)) return;
 
-    items.push(new Item(name));
+    items.push({ name: name, purchased: false });
     render();
+}
+
+function showMessage(text) {
+    message.textContent = text;
 }
 
 function reorder() {
@@ -68,7 +50,7 @@ function render() {
         checkbox.checked = item.purchased;
 
         checkbox.addEventListener("change", () => {
-            item.toggle();
+            item.purchased = checkbox.checked;
             reorder();
             render();
         });
@@ -79,28 +61,7 @@ function render() {
         li.appendChild(checkbox);
         li.appendChild(text);
 
-        if (item.purchased) {
-            const minusButton = document.createElement("button");
-            minusButton.textContent = "-";
-            minusButton.addEventListener("click", () => {
-                item.decreaseQuantity();
-                render();
-            });
-            li.appendChild(minusButton);
-
-            const quantitySpan = document.createElement("span");
-            quantitySpan.textContent = ` ${item.quantity} `;
-            quantitySpan.style.margin = "0 5px";
-            li.appendChild(quantitySpan);
-
-            const plusButton = document.createElement("button");
-            plusButton.textContent = "+";
-            plusButton.addEventListener("click", () => {
-                item.increaseQuantity();
-                render();
-            });
-            li.appendChild(plusButton);
-        } else {
+        if (!item.purchased) {
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "Eliminar";
             deleteButton.addEventListener("click", () => {
