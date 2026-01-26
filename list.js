@@ -9,129 +9,129 @@ class Item {
         this.purchased = !this.purchased;
     }
 
-    increaseQuantity() {
+    increment() {
         this.quantity++;
     }
 
-    decreaseQuantity() {
-        if (this.quantity > 1) {
-            this.quantity--;
-        }
+    decrement() {
+        this.quantity--;
     }
 }
 
-let items = [
-    new Item("Pan"),
-    new Item("Gelatina"),
-    new Item("Palomitas"),
-    new Item("Plátano"),
-    new Item("Arroz"),
-    new Item("Pescado"),
-    new Item("Pasta"),
-    new Item("Hamburguesa")
-];
-items[1].purchased = true;
+class ItemList {
+    constructor(parent) {
+        this.items = [];
+        this.parent = parent;
+    }
 
-const itemInput = document.getElementById("itemInput");
-const addButton = document.getElementById("addButton");
-const plusButton = document.getElementById("plusButton");
-const list = document.getElementById("list");
-const message = document.getElementById("message");
-const clearButton = document.getElementById("clearButton");
-const sortButton = document.getElementById("sortButton");
+    addItem(name) {
+        name = name.trim();
+        if (name === "") return;
 
-function showMessage(text) {
-    message.textContent = text;
-}
+        const existing = this.items.find(item => item.name === name);
+        if (existing) {
+            existing.increment();
+        } else {
+            this.items.push(new Item(name));
+        }
+        this.render();
+    }
 
-function addItem(name) {
-    name = name.trim();
-    if (name === "") return;
-    if (items.some(item => item.name === name)) return;
+    removeItem(itemToRemove) {
+        this.items = this.items.filter(item => item !== itemToRemove);
+        this.render();
+    }
 
-    items.push(new Item(name));
-    render();
-}
+    reorder() {
+        this.items.sort((a, b) => a.purchased - b.purchased);
+    }
 
-function reorder() {
-    items.sort((a, b) => a.purchased - b.purchased);
-}
+    render() {
+        this.parent.innerHTML = "";
+        this.reorder();
 
-function render() {
-    list.innerHTML = "";
+        this.items.forEach(item => {
+            const li = document.createElement("li");
 
-    for (const item of items) {
-        const li = document.createElement("li");
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = item.purchased;
-
-        checkbox.addEventListener("change", () => {
-            item.toggle();
-            reorder();
-            render();
-        });
-
-        const text = document.createElement("span");
-        text.textContent = item.name;
-
-        li.appendChild(checkbox);
-        li.appendChild(text);
-
-        if (item.purchased) {
-            const minusButton = document.createElement("button");
-            minusButton.textContent = "-";
-            minusButton.addEventListener("click", () => {
-                item.decreaseQuantity();
-                render();
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = item.purchased;
+            checkbox.addEventListener("change", () => {
+                item.toggle();
+                this.render();
             });
-            li.appendChild(minusButton);
 
-            const quantitySpan = document.createElement("span");
-            quantitySpan.textContent = ` ${item.quantity} `;
-            quantitySpan.style.margin = "0 5px";
-            li.appendChild(quantitySpan);
+            const text = document.createElement("span");
+            text.textContent = ` ${item.name} (${item.quantity}) `;
+
+            if (item.purchased) {
+                text.style.textDecoration = "line-through";
+            }
+
+            li.appendChild(checkbox);
+            li.appendChild(text);
 
             const plusButton = document.createElement("button");
             plusButton.textContent = "+";
             plusButton.addEventListener("click", () => {
-                item.increaseQuantity();
-                render();
+                item.increment();
+                this.render();
             });
-            li.appendChild(plusButton);
-        } else {
-            const deleteButton = document.createElement("button");
-            deleteButton.textContent = "Eliminar";
-            deleteButton.addEventListener("click", () => {
-                items = items.filter(i => i !== item);
-                render();
-            });
-            li.appendChild(deleteButton);
-        }
 
-        list.appendChild(li);
+            const minusButton = document.createElement("button");
+            minusButton.textContent = "-";
+            minusButton.addEventListener("click", () => {
+                item.decrement();
+                if (item.quantity === 0) {
+                    this.removeItem(item);
+                } else {
+                    this.render();
+                }
+            });
+
+            li.appendChild(plusButton);
+            li.appendChild(minusButton);
+
+            this.parent.appendChild(li);
+        });
     }
 
-    showMessage("renderizado completado");
+    clear() {
+        this.items = [];
+        this.render();
+    }
 }
 
-addButton.addEventListener("click", () => addItem(itemInput.value));
+const itemList = new ItemList(document.getElementById("list"));
 
-itemInput.addEventListener("keydown", (e) => {
+const itemInput = document.getElementById("itemInput");
+const addButton = document.getElementById("addButton");
+const clearButton = document.getElementById("clearButton");
+const sortButton = document.getElementById("sortButton");
+
+addButton.addEventListener("click", () => {
+    itemList.addItem(itemInput.value);
+    itemInput.value = "";
+});
+
+itemInput.addEventListener("keydown", e => {
     if (e.key === "Enter") {
-        addItem(itemInput.value);
+        itemList.addItem(itemInput.value);
+        itemInput.value = "";
     }
 });
 
 clearButton.addEventListener("click", () => {
-    items = [];
-    render();
+    itemList.clear();
 });
 
 sortButton.addEventListener("click", () => {
-    reorder();
-    render();
+    itemList.reorder();
+    itemList.render();
 });
 
-render();
+itemList.addItem("Pan");
+itemList.addItem("Leche");
+itemList.addItem("Huevos");
+
+

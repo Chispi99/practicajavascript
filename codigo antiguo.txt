@@ -1,8 +1,3 @@
-
-
-
-
-
 let items = [
     { name: "Pan", purchased: false },
     { name: "Gelatina", purchased: true },
